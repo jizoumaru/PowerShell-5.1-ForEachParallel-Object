@@ -51,21 +51,25 @@
 
     [object] Remove() {
         $this.Count--
+        
         $Future = $this.EndQueue.Take()
+        $PowerShell = $Future.PowerShell
+        $AsyncResult = $Future.AsyncResult
+
         $Result = $null
         $Err = $null
 
         try {
-            $Result = $Future.PowerShell.EndInvoke($Future.AsyncResult)
+            $Result = $PowerShell.EndInvoke($AsyncResult)
 
-            if ($Future.PowerShell.HadErrors) {
-                $Err = $Future.PowerShell.Streams.Error -join ", "
+            if ($PowerShell.HadErrors) {
+                $Err = $PowerShell.Streams.Error -join ", "
             }
         } catch {
             $Err = $_
         }
 
-        $Future.PowerShell.Dispose()
+        $PowerShell.Dispose()
 
         if ($Err -ne $null) {
             throw $Err
@@ -118,3 +122,4 @@ function ForEachParallel-Object {
     $ThreadId = [System.Threading.Thread]::CurrentThread.ManagedThreadId
     "Element = $_, ThreadId = $ThreadId"
 } 
+
